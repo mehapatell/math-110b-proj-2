@@ -1,0 +1,86 @@
+#%matplotlib inline
+#Data Input
+# %matplotlib inline
+# Data Input
+import os
+import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
+from Backprop import *
+from Prediction import *
+
+# This model tests a 4-layer FNN with 1 input layer, 2 hidden layes, and 1 output layer. (Additional layers may be
+# added by following directions in comments) We implement a mini-batch gradient descent method in which smaller (<10)
+# batch sizes are the most optimum We have split the 42,000 traning sampples into a (.9) train and (.1) validation
+# set, both of which performaces will be shown The performance of the model can be further validated by following the
+# comments in the code to modify this test script
+
+# change data path
+path = os.listdir("/Users/admin/Downloads/Math 100b proj 2")
+print(path)
+#Read the data
+train_data = pd.read_csv('/Users/admin/Downloads/Math 100b proj 2/train.csv')
+test_data = pd.read_csv("/Users/admin/Downloads/Math 100b proj 2/train.csv")
+
+# Set up the train and validation data split
+train, validation = np.split(train_data.sample(frac=1), [int(.9*len(train_data))])
+
+#assign train and validation arrays
+y_train = train['label'].values
+y_validation = validation['label'].values
+X_train = train.drop(columns=['label']).values/255
+X_validation = validation.drop(columns=['label']).values/255
+
+
+# mini batch gradient descent batch size
+# change for different batch size
+minibatch_size = 4
+
+# set up minibatch gradient descent for training dataset
+for i in range(0, X_train.shape[0], minibatch_size):
+# Get pair of (X, y) of the current minibatch/chunk
+    X_train_mini = X_train[i:i + minibatch_size]
+    y_train_mini = y_train[i:i + minibatch_size]
+X_train = X_train_mini
+y_train = y_train_mini
+
+# set up minibatch gradient descent for validation dataset
+for i in range(0, X_validation.shape[0], minibatch_size):
+# Get pair of (X, y) of the current minibatch/chunk
+    X_valid_mini = X_validation[i:i + minibatch_size]
+    y_valid_mini = y_validation[i:i + minibatch_size]
+X_valid = X_valid_mini
+y_valid = y_valid_mini
+
+#X_test (NOT USED)
+#X_test = test_data.values/255
+
+#initial conditions
+eta = 5e-1
+alpha = 1e-6 # regularization
+gamma = 0.99 # RMSprop
+eps = 1e-3 # RMSprop
+num_iter = 2000 # number of iterations of gradient descent
+n_H = 256 # number of neurons in the hidden layer
+n = X_train.shape[1] # number of pixels in an image
+K = 10
+
+# initialization
+np.random.seed(1127)
+
+# added column 2 for additional hidden layer
+#continue to add columns to middle of array of size (n_h,n_h) for additional hidden layers
+W = [1e-1*np.random.randn(n, n_H), 1e-1*np.random.randn(n_H, n_H), 1e-1*np.random.randn(n_H, K)]
+
+# added column 2 for additional hidden layer
+#continue to add columns to array of size (n_h) for additional hidden layers
+b = [np.random.randn(n_H), np.random.randn(n_H)]
+
+# y prediction test (NOT USED)
+#y_pred_test = np.argmax(h(X_test,W,b), axis=1)
+
+#running training set
+backprop(W, b, X_train, y_train, alpha=1e-4)
+exec(open("Gradient.py").read())
+
+#running validation set
+backprop(W, b, X_valid, y_valid, alpha=1e-4)
+exec(open("Gradient1_valid.py").read())
